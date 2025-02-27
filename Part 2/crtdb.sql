@@ -24,7 +24,7 @@ CREATE TABLE Member (
 CREATE TABLE Class (
     classID INTEGER PRIMARY KEY AUTOINCREMENT, -- Unique ID
     className varchar(50) NOT NULL,
-    classType varchar(50) NOT NULL CHECK(type IN ('Yoga', 'Zumba', 'HIIT', 'Weights')), -- Type of class 
+    classType varchar(50) NOT NULL CHECK(classType IN ('Yoga', 'Zumba', 'HIIT', 'Weights')), -- Type of class 
     duration INTEGER NOT NULL,
     classCapacity INTEGER NOT NULL, -- Max number of participants for the class
     instructorID INTEGER,
@@ -54,7 +54,7 @@ CREATE TABLE GymFacility (
 CREATE TABLE Equipment (
     equipmentID INTEGER PRIMARY KEY AUTOINCREMENT, -- Unique ID
     name varchar(50) NOT NULL,
-    type varchar(30) CHECK(classType IN ('Cardio', 'Strength', 'Flexibility', 'Recovery')), -- Type of equipment
+    classType varchar(30) CHECK(classType IN ('Cardio', 'Strength', 'Flexibility', 'Recovery')), -- Type of equipment
     quantity INTEGER check (quantity > 0), -- Quantity of the equipment available in the gym
     gymId INTEGER,
     FOREIGN KEY (gymId) REFERENCES GymFacility(gymId) -- Foreign key to the GymFacility table
