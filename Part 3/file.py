@@ -23,16 +23,24 @@ def connectToDatabase() :
         print(f"Successfully connected to {__dataBaseName__}")
         return connection, connection.cursor() # return the cursor for further database interaction
     
-    except:
-        print("ERROR: Database connection unsuccessful.")
+    except Exception as e:
+        print(f"ERROR: Database connection unsuccessful. Reason: {e}")
         sys.exit(1) # terminate program if connection fails
         
 def checkForInteger(inputToCheck):
+    """Function to check if a String represents a a postivie integer
+
+    Args:
+        inputToCheck (String): the String to check
+
+    Returns:
+        int: the integer if applicable
+    """
     
     if inputToCheck.isdigit():
         return int(inputToCheck)
     else:
-        print("ERROR: The first parameter need to be a positive integer from 1 to 10.")
+        print("ERROR: The first parameter needs to be a positive integer from 1 to 10.")
         sys.exit(1)
         
         
