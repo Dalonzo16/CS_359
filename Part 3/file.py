@@ -1,7 +1,7 @@
 """
 This python file contains a program that - when executed, accepts an integer number from 1 to 10
 as a command line argument. For the numbers 3, 4, 6, and 9, an additional argument being the 
-<classId>, <type>, <instructorId>, and <classType> respectively, are required to be passed as well. 
+<classId>, <type>, <instructorId>, and <classType> respectively, is required to be passed as well. 
 
 Authors: Alena Fischer, Devon Alonzo, Ludwig Scherer
 Date: 03/23/2025
