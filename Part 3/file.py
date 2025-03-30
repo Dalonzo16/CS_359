@@ -5,7 +5,7 @@ as a command line argument. For the numbers 3, 4, 6, and 9, an additional argume
 
 Authors: Alena Fischer, Devon Alonzo, Ludwig Scherer
 Date: 03/23/2025
-Last Updated: 3/26/2025
+Last Updated: 3/30/2025
 """
 
 import sqlite3
@@ -44,7 +44,23 @@ def checkForInteger(inputToCheck):
         print("ERROR: The first parameter needs to be a positive integer from 1 to 10.")
         sys.exit(1)
 
-def execute_query(db_name, query, params=()):
+def checkForString(inputToCheck):
+    """Function to check if a String represents a a postivie integer
+
+    Args:
+        inputToCheck (value): the value to check
+
+    Returns:
+        string: the string if applicable
+    """
+    
+    if inputToCheck.isdigit():
+        print("ERROR: The first parameter needs to be a string value that must be one of the following 'Strength', 'Flexibility', 'Cardio', 'Recovery' ")
+        sys.exit(1)
+    else:
+        return str(inputToCheck)
+
+def execute_query(query, params=()):
     """
     Executes an SQL query and prints the results
 
@@ -73,6 +89,68 @@ def execute_query(db_name, query, params=()):
     finally:
         connection.close() # Close the database connection after the query is executed
 
+def get_members_and_membership_plan():
+    """
+    Fetches all members name, email, and age as well as their membership plan
+    """
+    query = """
+        SELECT 
+            name, 
+            email, 
+            age, 
+            planId, 
+            cost, 
+            planType 
+        FROM Member, MembershipPlan 
+        NATURAL JOIN PAYMENT 
+        WHERE Member.memberID = Payment.memberID
+    """
+
+    execute_query(query)
+
+def get_number_of_class_for_each_gym():
+    """
+    Fetches the number of classes that each gym facility offers
+    """
+
+    query = """SELECT 
+    g.location, 
+    COUNT(c.gymID) as 'Number of Classes' 
+    FROM class as c, 
+    GymFacility as g 
+    WHERE c.gymID = g.gymID 
+    GROUP BY g.gymID
+    """
+
+    execute_query(query)
+
+def get_members_in_class(classID):
+    """
+    Fetches all the members that attend a specific class
+    """
+
+    query = "SELECT name FROM Member NATURAL JOIN Attends WHERE Attends.classID = ?"
+
+    execute_query(query, (classID,))
+
+def get_equipment_by_type(equipmentType):
+    """
+    Fethces specific equipment by type
+    """
+
+    query = "SELECT * FROM Equipment WHERE classType = ?"
+
+    execute_query(query, (equipmentType,))
+
+def get_expired_membership_members():
+    """
+    Fetches the members with expired memberships
+    """
+
+    query ="SELECT * FROM Member WHERE membershipEndDate <= DATE('now')"
+
+    execute_query(query)
+
 
 def get_classes_by_instructor(instructor_id):
     """
@@ -91,7 +169,7 @@ def get_classes_by_instructor(instructor_id):
         JOIN Class c ON i.instructorID = c.instructorID
         WHERE i.instructorID = ?
     """
-    execute_query(__dataBaseName__, query, (instructor_id,))  
+    execute_query(query, (instructor_id,))  
 
 def get_average_age_active_memerbship():
     """
@@ -103,7 +181,7 @@ def get_average_age_active_memerbship():
         FROM Member
         WHERE membershipEndDate > DATE('now');
     """
-    execute_query(__dataBaseName__, query)
+    execute_query(query)
 
 def get_average_age_expired_memerbship():
     """
@@ -115,7 +193,7 @@ def get_average_age_expired_memerbship():
         FROM Member
         WHERE membershipEndDate <= DATE('now');
     """
-    execute_query(__dataBaseName__, query)
+    execute_query(query)
 
 def get_top_instructors():
     """
@@ -132,7 +210,7 @@ def get_top_instructors():
         ORDER BY class_count DESC
         LIMIT 3;
     """
-    execute_query(__dataBaseName__, query)
+    execute_query(query)
 
 def get_members_attended_classes(class_type):
     """
@@ -147,7 +225,7 @@ def get_members_attended_classes(class_type):
         WHERE c.classType LIKE ?
         GROUP BY m.memberID;
     """
-    execute_query(__dataBaseName__, query, (class_type,))  
+    execute_query(query, (class_type,))  
 
 def members_attended_classes_last_month():
     """
@@ -217,28 +295,49 @@ def main():
         
         match taskNumber:
             case 1:
+                
                 # call function for task 1
-                pass
+                get_members_and_membership_plan()
+            
             case 2:
+
                 # call function for task 2
-                pass
+                get_number_of_class_for_each_gym()
+                
             case 3:
+
                 # call function for task 3
-                pass
+                if secondArg:
+                    classID = checkForInteger(secondArg)
+                    get_members_in_class(classID)
+                else:
+                    print("ERROR: Please provide a class ID")
+
             case 4:
+
                 # call function for task 4
-                pass
+                if secondArg:
+                    equipmentType = checkForString(secondArg)
+                    get_equipment_by_type(equipmentType)
+                else:
+                    print("ERROR: Please provide an equipment type")
+                
             case 5:
+
                 # call function for task 5
-                pass
+                get_expired_membership_members()
+                
             case 6:
+
                 # For task 6, get instructor ID from second argument and fetch their classes
                 if secondArg:
                     instructor_id = checkForInteger(secondArg)
                     get_classes_by_instructor(instructor_id)
                 else:
                     print("ERROR: Please provide an instructor ID.")
+
             case 7:
+
                 # Calling function to caluclate active membership average age
                 print("Calculating average age for active memerbships...")
                 get_average_age_active_memerbship()
@@ -246,21 +345,27 @@ def main():
                 # Calling function to calculate expired membership average age
                 print("Calculating average age for expired memerbships...")
                 get_average_age_expired_memerbship()
+
             case 8:
                 # For task 8, get and display the top 3 instructors
                 get_top_instructors() 
+
             case 9:
+
                 # For task 9, get class type from second argument and display members who attended
                 if secondArg:
                     class_type = secondArg
                     get_members_attended_classes(class_type)
                 else:
                     print("ERROR: Please provide an class type.")
+                    
             case 10:
+
                 # Display members who attended classes last month
                 members_attended_classes_last_month()
-                pass
+
             case default:
+
                 # Handle invalid task number
                 print("ERROR: The integer passed must be one from 1 to 10.")
                 sys.exit(1)
