@@ -4,7 +4,7 @@ The objectives for this stage were to write SQL statements to search for and ret
 
 Work Allocation:
     - Ludwig Scherer: Database connection function, command line argument preparation and main function skeleton
-    - Alena Fisher: Wrote queries for questions 6-10 and added necessary information into the database for the queries. 
+    - Alena Fisher: Wrote queries for questions 6-10, added necessary information into the database for the queries, and created Execution.pdf. 
     - Devon Alonzo: Wrote queries for questions 1-5 and also added more information to the database
 
 Project leader for this stage was: Alena Fisher
