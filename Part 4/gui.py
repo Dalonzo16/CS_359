@@ -74,7 +74,7 @@ def show_members_and_membership_plan(connection):
     layout = [[sg.Table(values=results, headings=headings, max_col_width=35,
                        auto_size_columns=True,
                        display_row_numbers=False,
-                       justification='right',
+                       justification='center',
                        num_rows=10,
                        key='-TABLE-',
                        row_height=35)]
@@ -328,7 +328,7 @@ def display_all_classes(connection):
     layout = [[sg.Table(values=results, headings=headings, max_col_width=35,
                        auto_size_columns=True,
                        display_row_numbers=False,
-                       justification='right',
+                       justification='center',
                        num_rows=10,
                        key='-TABLE-',
                        row_height=35)]
@@ -615,7 +615,7 @@ def find_members_by_class(connection):
                     sg.Window('Members in Class', [[
                         sg.Table(values=data, headings=headings,
                                  auto_size_columns=True,
-                                 justification='right',
+                                 justification='center',
                                  num_rows=10)
                     ]]).read(close=True)
 
@@ -654,7 +654,7 @@ def list_classes_and_attendance(connection):
     layout = [[sg.Table(values=results, headings=headings, max_col_width=35,
                        auto_size_columns=True,
                        display_row_numbers=False,
-                       justification='right',
+                       justification='center',
                        num_rows=10,
                        key='-TABLE-',
                        row_height=35)]
