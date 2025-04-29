@@ -1,3 +1,4 @@
+
 """
 This python file contains the database-related functions for managing various entities within
 the XYZ Gym management system. It includes CRUD (Create, Read, Update, Delete) operations for 
@@ -7,7 +8,7 @@ All functions interact with an SQLite database and include error handling to ens
 
 Authors: Alena Fischer, Devon Alonzo, Ludwig Scherer
 Date: 03/23/2025
-Last Updated: 4/27/2025
+Last Updated: 4/28/2025
 """
 
 import PySimpleGUI as sg      
@@ -635,4 +636,150 @@ def gym_exists(connection, gym_id):
     except sqlite3.Error as e:
         # Print error message if issue occurs
         print(f"Error checking gym existence: {e}")
+        return False
+    
+# ------------------------ Equipment Functions ------------------------
+
+def get_all_equipment(connection):
+    """
+    Retrieves all equipment records from the database.
+
+    Parameters:
+    - connection (sqlite3.Connection): The active connection to the database.
+
+    Returns:
+    - list: List of all equipment.
+    """
+    # query to get all equipment
+    query = """SELECT * FROM Equipment"""
+
+    # return the equipment
+    return execute_query(query, connection)
+
+def add_equipment(connection, equipmentName, equipmentType, quantity, gymID):
+    """
+    Adds a new piece of equipment to the database.
+
+    Parameters:
+    - connection (sqlite3.Connection): The active connection to the database.
+    - equipmentName (str): Name of the equipment.
+    - equipmentType (str): Type of the equipment (Cardio, Strength, etc.).
+    - quantity (int): quantity of the piece of equipment.
+    - gymID (int): ID of the gym facility.
+
+    Returns:
+    - int: ID of the newly added equipment if successful.
+    - bool: False if addition fails.
+    """
+
+    # SQL query to add a piece of equipment to the database
+    query = """
+        INSERT INTO Equipment (name, classType, quantity, gymID)
+        VALUES (?, ?, ?, ?)
+    """
+
+    # Create a cursor object from the connection
+    cursor = connection.cursor()
+
+    try:
+        cursor.execute(query, (equipmentName, equipmentType, quantity, gymID))
+        connection.commit() # Commit the changes to the database
+        return cursor.lastrowid # Return the ID of the new equipment
+    except sqlite3.Error as e:
+        # Print error message if insertion fails
+        print(f"Error adding member: {e}")
+        return False
+    
+def update_equipment(connection, equipmentID, equipmentName, equipmentType, quantity, gymID):
+    """
+    Updates the details of an existing piece of equipment.
+
+    Parameters:
+    - connection (sqlite3.Connection): The active connection to the database.
+    - equipmentID (int): ID of the equipment to update.
+    - equipmentName (int): New name of the equipment.
+    - equipmentType (str): New equipment type.
+    - qunatity (int): New quantity.
+    - gymID (int): New gym ID.
+
+    Returns:
+    - bool: True if updated successfully, False otherwise.
+    """
+    
+    # SQL query to update a class's information
+    query = """
+        UPDATE Equipment
+        SET name = ?, classType = ?, quantity = ?, gymID = ?
+        WHERE equipmentID = ?
+    """
+
+    # Create a cursor object from the connection
+    cursor = connection.cursor()
+
+    try:
+        cursor.execute(query, (equipmentName, equipmentType, quantity, gymID, equipmentID))
+        connection.commit() # Commit the changes to the databaes
+        return True
+    except sqlite3.Error as e:
+        # Print error message if insertion fails
+        print(f"Error updating equipment: {e}")
+        return False
+    
+def delete_equipment(connection, equipment_id):
+    """
+    Deletes a piece of equipment from the Equipment table in the database.
+
+    Parameters:
+    - connection (sqlite3.Connection): The active connection to the database.
+    - equipment_id (int): ID of the equipment to delete.
+
+    Returns:
+    - bool: True if deletion succeeds, False otherwise.
+    """
+
+    # SQL query to delete a piece of a equipment
+    query = """
+        DELETE FROM Equipment
+        WHERE equipmentID = ?
+    """
+
+    # Create a cursor object from the connection
+    cursor = connection.cursor()
+
+    try:
+        cursor.execute(query, (equipment_id,))
+        connection.commit() # Commit the changes to the database
+        return True
+    except sqlite3.Error as e:
+        # Print an error message if issue occurs
+        print(f"Error deleting member: {e}")
+        return False
+    
+def equipment_exists(connection, equipment_id):
+    """
+    Check if a piece of equipment exists in the database.
+
+    Parameters:
+    - connection (sqlite3.Connection): The active connection to the database.
+    - equipment_id (int): Equipment ID to check.
+
+    Returns:
+    - bool: True if class exists, False otherwise.
+    """
+
+    # SQL query to check if the equipment exists in the Equipment table
+    query = """
+        SELECT 1 FROM Equipment WHERE equipmentID = ?
+    """
+
+    # Create a cursor object from the connection
+    cursor = connection.cursor()
+
+    try:
+        cursor.execute(query, (equipment_id,))
+        # Returns True if the equipment exists, False otherwise
+        return cursor.fetchone() is not None
+    except sqlite3.Error as e:
+        # Print error message if issue occurs
+        print(f"Error checking member existence: {e}")
         return False
