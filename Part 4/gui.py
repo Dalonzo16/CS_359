@@ -130,40 +130,54 @@ def add_new_member(connection):
         # If the user closes the window or clicks Cancel
         if event in (sg.WIN_CLOSED, 'Cancel'):
             break
-        elif event == 'Submit':
-            # Retreive the form values
-            name = values['-NAME-']
-            email = values['-EMAIL-']
-            phone = values['-PHONE-']
-            address = values['-ADDRESS-']
-            age = int(values['-AGE-'])
-            start_date = values['-START-']
-            end_date = values['-END-']
-            plan_id = values['-PLANID-']
-            amount_paid = values['-AMOUNT-']
-            payment_date = values['-PAYDATE-']
+        elif event == 'Submit':                
+                # Retreive the form values
+                name = values['-NAME-']
+                email = values['-EMAIL-']
+                phone = is_integer(values['-PHONE-'], "phone number") # make sure phone number is integer
+                address = values['-ADDRESS-']
+                age = is_integer(values['-AGE-'], "age") # make sure integer input is given for age giled
+                start_date = values['-START-']
+                end_date = values['-END-']
+                plan_id = is_integer(values['-PLANID-'], "plan id") # make sure plan id is an integer
+                amount_paid = is_float(values['-AMOUNT-'], "payment")
+                payment_date = values['-PAYDATE-']
+                    
+                # continue if any of the inputs were invalid
+                if age is None or phone is None or plan_id is None or amount_paid is None:
+                    continue
 
-            # Valid age constraint (must be at least 15)
-            age = int(age)
-            if age < 15:
-                sg.popup_error("Age must be 15 or older.")
-                continue
+                # Valid age constraint (must be at least 15)
+                if age < 15:
+                    sg.popup_error("Age must be 15 or older.")
+                    continue
 
-            # Valid date logic (end must be after start)
-            if start_date >= end_date:
-                sg.popup_error("End date must be later than start date.")
-                continue
+                # Valid date logic (end must be after start)
+                if start_date >= end_date:
+                    sg.popup_error("End date must be later than start date.")
+                    continue
 
-            # Check if email already exists
-            if file.check_email_exists(connection, email):
-                sg.popup_error("This email is already associated with an existing member.")
-                continue
+                # Check if email already exists
+                if file.check_email_exists(connection, email):
+                    sg.popup_error("This email is already associated with an existing member.")
+                    continue
+                
+                # Check if selected membership plan id exists
+                if not file.membership_plan_exists(connection, plan_id):
+                    sg.popup_error(
+                        "Please enter a valid membership plan id. Options: \n",
+                        *list(file.get_all_membership_plan_ids(connection))
+                    )
+                    continue
 
-            # Ensure all fields of the form are filled
-            if not (name and email and phone and address and age and plan_id and amount_paid and start_date and end_date and payment_date):
-                sg.popup_error("Please fill in all fields.")
-                continue
-        
+                # Ensure all fields of the form are filled
+                if not (
+                    name and email and phone and address and age and plan_id and amount_paid 
+                    and start_date and end_date and payment_date
+                ):
+                    sg.popup_error("Please fill in all fields.")
+                    continue
+                
         # Try to add the member to the database
         member_id = file.add_member(connection, name, email, phone, address, int(age), start_date, end_date)
         if member_id:
@@ -227,12 +241,20 @@ def update_member(connection):
                 # Get updated values from the form
                 name = values['-NAME-']
                 email = values['-EMAIL-']
-                phone = values['-PHONE-']
+                phone = is_integer(values['-PHONE-'], "phone number")
                 address = values['-ADDRESS-']
-                age = int(values['-AGE-'])
+                age = is_integer(values['-AGE-'], "age")
                 start_date = values['-START-']
                 end_date = values['-END-']
 
+                if phone is None or age is None: # make sure inputs are valid
+                    continue
+
+                # Valid age constraint (must be at least 15)
+                if age < 15:
+                    sg.popup_error("Age must be 15 or older.")
+                    continue
+                
                 # Update the member in the database
                 success = file.update_member(connection, member_id, name, email, phone, address, age, start_date, end_date)
                 if success:
@@ -1105,6 +1127,26 @@ def run_program():
             elif event == 'Logout and Exit':
                 logout_and_exit(connection)
                 break
+            
+def is_integer(input, input_field_name):
+    if not input.strip():
+        sg.popup_error(f"ERROR: The {input_field_name} field cannot be empty.")
+        return None
+    try:
+        return int(input)
+    except ValueError:
+        sg.popup_error(f"ERROR: Only integer numbers allowed in {input_field_name} field.")
+        return None
+    
+def is_float(input, input_field_name):
+    if not input.strip():
+        sg.popup_error(f"ERROR: The {input_field_name} field cannot be empty.")
+        return None
+    try:
+        return float(input)
+    except ValueError:
+        sg.popup_error(f"ERROR: Only decimal numbers allowed in {input_field_name} field.")
+        return None
 
 # Run the program
 if __name__ == '__main__':

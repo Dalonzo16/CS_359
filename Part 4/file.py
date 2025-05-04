@@ -549,6 +549,55 @@ def get_members_and_membership_plan(connection):
     # Execute the query and return the result
     return execute_query(query, connection)
 
+def membership_plan_exists(connection, mempership_id) :
+    """
+    Check if a membership plan exists in the database.
+
+    Parameters:
+    - connection (sqlite3.Connection): The active connection to the database.
+    - mempership_id (int): membership ID to check.
+
+    Returns:
+    - bool: True if plan exists, False otherwise.
+    """
+
+    # SQL query to check if the plan exists in the MembershipPlan table
+    query = """
+        SELECT 1 FROM MembershipPlan WHERE planId = ?
+    """
+
+    # Create a cursor object from the connection
+    cursor = connection.cursor()
+
+    try:
+        cursor.execute(query, (mempership_id,))
+        # Returns True if the equipment exists, False otherwise
+        return cursor.fetchone() is not None
+    except sqlite3.Error as e:
+        # Print error message if issue occurs
+        print(f"Error checking member existence: {e}")
+        return False
+    
+def get_all_membership_plan_ids(connection):
+    """
+    Retrieves all plan id's from the database.
+
+    Parameters:
+    - connection (sqlite3.Connection): The active connection to the database.
+
+    Returns:
+    - list: List of all plan id's.
+    """
+
+    # SQL query to retrieve all plan id's
+    query = """
+        SELECT planID
+        FROM MembershipPlan
+    """
+
+    # Execute query and return the results
+    return execute_query(query, connection)
+    
 def get_members_in_class(connection, class_id):
     """
     Retrieves all members registered to a specific class.
@@ -783,3 +832,4 @@ def equipment_exists(connection, equipment_id):
         # Print error message if issue occurs
         print(f"Error checking member existence: {e}")
         return False
+
