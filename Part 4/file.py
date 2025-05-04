@@ -14,7 +14,6 @@ Last Updated: 4/28/2025
 import PySimpleGUI as sg      
 import sqlite3
 import os
-import sys
 
 __dataBaseName__ =  "XYZGym.sqlite"
 

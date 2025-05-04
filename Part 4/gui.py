@@ -17,16 +17,15 @@ Date: 04/28/2025
 Last Updated: 4/28/2025
 """
 import PySimpleGUI as sg 
-import sqlite3     
 import file
 
 # sg.theme('DarkBlue')
 
 sg.theme('Black')
 
-
-# Fixed database name
-DB_NAME = "XYZGym.sqlite"
+DB_NAME = "XYZGym.sqlite" # Fixed database name
+OFFERED_CLASSES = ['Yoga', 'Zumba', 'HIIT', 'Weights'] # define the valid class names
+EQUIPMENT_TYPES = ['Cardio', 'Strength', 'Flexibility', 'Recovery']
 
 def logout_and_exit(connection):
     """
@@ -363,6 +362,8 @@ def display_all_classes(connection):
     # Close the window
     window.close()
 
+
+
 def add_class(connection):
     """
     Opens a window to input new class information and adds the class to the database.
@@ -389,6 +390,7 @@ def add_class(connection):
 
     # Create the window
     window = sg.Window('Add New Class', layout)
+    
 
     while True:
         # Read user input and event
@@ -401,57 +403,43 @@ def add_class(connection):
             # Retrieve the form values from the input fields
             name = values['-NAME-']
             class_type = values['-TYPE-']
-            duration = int(values['-DURATION-'])
-            capacity = int(values['-CAPACITY-'])
-            instructor_id = int(values['-INSTRUCTORID-'])
-            gym_id = int(values['-GYMID-'])
+            duration = is_integer(values['-DURATION-'], "duration")
+            capacity = is_integer(values['-CAPACITY-'], "capacity")
+            instructor_id = is_integer(values['-INSTRUCTORID-'], "instructor id")
+            gym_id = is_integer(values['-GYMID-'], "gym id")
 
-            # Validation - name should not be empty
-            if not name:
-                sg.popup_error("Class name cannot be empty.")
+            # if input validation for any number field failed, continue
+            if duration is None or capacity is None or instructor_id is None or gym_id is None:
                 continue
 
+            # Validation - name should not be empty
+            if not name.strip():
+                sg.popup_error("Class name cannot be empty.")
+                continue
+            
             # Validation - class type must be valid
-            if class_type not in ['Yoga', 'Zumba', 'HIIT', 'Weights']:
-                sg.popup_error("Class type must be one of: Yoga, Zumba, HIIT, Weights.")
+            if not class_type or class_type.strip() not in OFFERED_CLASSES:
+                sg.popup_error("Class type must be one of: ", *OFFERED_CLASSES)
                 continue
 
             # Validation - duration should be a nonnegative integer
-            try:
-                duration = int(duration)
-                if duration <= 0:
-                    raise ValueError
-            except ValueError:
+            if duration <= 0:
                 sg.popup_error("Duration must be a positive integer.")
                 continue
 
             # Validation - capacity should be a nonnegative integer
-            try:
-                capacity = int(capacity)
-                if capacity <= 0:
-                    raise ValueError
-            except ValueError:
+            if capacity <= 0:
                 sg.popup_error("Class capacity must be a positive integer.")
                 continue
 
             # Validation - the instructor ID must exist
-            try:
-                instructor_id = int(instructor_id)
-                if not file.instructor_exists(connection, instructor_id):
-                    sg.popup_error(f"Instructor ID {instructor_id} does not exist.")
-                    continue
-            except ValueError:
-                sg.popup_error("Instructor ID must be a valid integer.")
+            if not file.instructor_exists(connection, instructor_id):
+                sg.popup_error(f"Instructor ID {instructor_id} does not exist.")
                 continue
 
             # Validation - gym ID must exist
-            try:
-                gym_id = int(gym_id)
-                if not file.gym_exists(connection, gym_id):
-                    sg.popup_error(f"Gym ID {gym_id} does not exist.")
-                    continue
-            except ValueError:
-                sg.popup_error("Gym ID must be a valid integer.")
+            if not file.gym_exists(connection, gym_id):
+                sg.popup_error(f"Gym ID {gym_id} does not exist.")
                 continue
 
             # Attempt to add the class
@@ -501,7 +489,11 @@ def update_class(connection):
         elif event == "Update":
             try:
                 # Retrieve and validate the entered class ID
-                class_id = int(values['-ID-'])
+                class_id = is_integer(values['-ID-'], "class id")
+
+                # make sure class_id was valid
+                if class_id is None:
+                    continue
 
                 # Check if the class exists in the database
                 if not file.class_exists(connection, class_id):
@@ -511,10 +503,44 @@ def update_class(connection):
                 # Get updated values from the form
                 name = values['-NAME-']
                 class_type = values['-TYPE-']
-                duration = int(values['-DURATION-'])
-                capacity = int(values['-CAPACITY-'])
-                instructor_id = int(values['-INSTRUCTORID-'])
-                gym_id = int(values['-GYMID-'])
+                duration = is_integer(values['-DURATION-'], "duration")
+                capacity = is_integer(values['-CAPACITY-'], "capacity")
+                instructor_id = is_integer(values['-INSTRUCTORID-'], "instructor id")
+                gym_id = is_integer(values['-GYMID-'], "gym id")
+
+                    # if input validation for any number field failed, continue
+                if duration is None or capacity is None or instructor_id is None or gym_id is None:
+                    continue
+
+                # Validation - name should not be empty
+                if not name.strip():
+                    sg.popup_error("Class name cannot be empty.")
+                    continue
+                
+                # Validation - class type must be valid
+                if not class_type or class_type.strip() not in OFFERED_CLASSES:
+                    sg.popup_error("Class type must be one of: ", *OFFERED_CLASSES)
+                    continue
+
+                # Validation - duration should be a nonnegative integer
+                if duration <= 0:
+                    sg.popup_error("Duration must be a positive integer.")
+                    continue
+
+                # Validation - capacity should be a nonnegative integer
+                if capacity <= 0:
+                    sg.popup_error("Class capacity must be a positive integer.")
+                    continue
+
+                # Validation - the instructor ID must exist
+                if not file.instructor_exists(connection, instructor_id):
+                    sg.popup_error(f"Instructor ID {instructor_id} does not exist.")
+                    continue
+
+                # Validation - gym ID must exist
+                if not file.gym_exists(connection, gym_id):
+                    sg.popup_error(f"Gym ID {gym_id} does not exist.")
+                    continue
 
                 # Attempt to update the class in the database
                 success = file.update_class(connection, class_id, name, class_type, duration, capacity, instructor_id, gym_id)
@@ -559,7 +585,11 @@ def delete_class(connection):
         elif event == "Delete":
             try:
                 # Retrieve and validate the entered class ID
-                class_id = int(values['-ID-'])
+                class_id = is_integer(values['-ID-'], "class id")
+                
+                # make sure class_id was valid
+                if class_id is None:
+                    continue
 
                 # Check if the class exists in the database
                 if not file.class_exists(connection, class_id):
@@ -621,7 +651,12 @@ def find_members_by_class(connection):
         elif event == 'Search':
             try:
                 # Retrieve and validate the entered class ID
-                class_id = int(values['-CLASSID-'])
+                class_id = is_integer(values['-CLASSID-'], "class id")
+                
+                # make sure class id was valid
+                if class_id is None:
+                    continue
+                
                 results = file.get_members_in_class(connection, class_id)
 
                 # Message is displayed if there are no members in the given class
@@ -767,40 +802,34 @@ def add_equipment(connection):
             # Retrieve the form values from the input fields
             name = values['-NAME-']
             equipment_type = values['-TYPE-']
-            quantity = int(values['-QUANTITY-'])
-            gym_id = int(values['-GYMID-'])
+            quantity = is_integer(values['-QUANTITY-'], "quantity")
+            gym_id = is_integer(values['-GYMID-'], "gym id")
+
+            # make sure the values were integers
+            if quantity is None or gym_id is None:
+                continue
 
             # Validation - name should not be empty
-            if not name:
+            if not name.strip():
                 sg.popup_error("Equipment name cannot be empty.")
                 continue
 
             # Validation - equipment type must be valid
-            if equipment_type not in ['Cardio', 'Strength', 'Flexibility', 'Recovery']:
-                sg.popup_error("Class type must be one of: Cardio, Strength, Flexibility, Recovery.")
+            if not equipment_type or equipment_type.strip() not in EQUIPMENT_TYPES:
+                sg.popup_error("Equipment type must be one of: ", *EQUIPMENT_TYPES)
                 continue
 
             # Validation - quantity should be a nonnegative integer
-            try:
-                quantity = int(quantity)
-                if quantity <= 0:
-                    raise ValueError
-            except ValueError:
+            if quantity <= 0:
                 sg.popup_error("Quantity must be a positive integer.")
                 continue
 
-
             # Validation - gym ID must exist
-            try:
-                gym_id = int(gym_id)
-                if not file.gym_exists(connection, gym_id):
-                    sg.popup_error(f"Gym ID {gym_id} does not exist.")
-                    continue
-            except ValueError:
-                sg.popup_error("Gym ID must be a valid integer.")
+            if not file.gym_exists(connection, gym_id):
+                sg.popup_error(f"Gym ID {gym_id} does not exist.")
                 continue
 
-            # Attempt to add the class
+            # Attempt to add the equipment
             success = file.add_equipment(connection, name, equipment_type, quantity, gym_id)
             if success:
                 sg.popup("Equipment added successfully!")
@@ -823,7 +852,7 @@ def update_equipment(connection):
     - connection (sqlite3.Connection): The active connection to the database.
     """
 
-    # Define the layout for updating class information
+    # Define the layout for updating equipment information
     layout = [
         [sg.Text('Enter Equipment ID to update'), sg.InputText(key='-ID-')],
         [sg.Text('New Equipment Name'), sg.InputText(key='-NAME-')],
@@ -845,8 +874,12 @@ def update_equipment(connection):
         elif event == "Update":
             try:
                 # Retrieve and validate the entered class ID
-                equipment_id = int(values['-ID-'])
+                equipment_id = is_integer(values['-ID-'], "equipment id")
 
+                # make sure id was valid
+                if equipment_id is None:
+                    continue
+                
                 # Check if the class exists in the database
                 if not file.equipment_exists(connection, equipment_id):
                     sg.popup_error("No equipment found with that ID.")
@@ -855,10 +888,34 @@ def update_equipment(connection):
                 # Get updated values from the form
                 name = values['-NAME-']
                 equipment_type = values['-TYPE-']
-                quantity = int(values['-QUANTITY-'])
-                gym_id = int(values['-GYMID-'])
+                quantity = is_integer(values['-QUANTITY-'], "quantity")
+                gym_id = is_integer(values['-GYMID-'], "gym id")
+                
+                    # make sure the values were integers
+                if quantity is None or gym_id is None:
+                    continue
 
-                # Attempt to update the class in the database
+                # Validation - name should not be empty
+                if not name.strip():
+                    sg.popup_error("Equipment name cannot be empty.")
+                    continue
+
+                # Validation - equipment type must be valid
+                if not equipment_type or equipment_type.strip() not in EQUIPMENT_TYPES:
+                    sg.popup_error("Equipment type must be one of: ", *EQUIPMENT_TYPES)
+                    continue
+
+                # Validation - quantity should be a nonnegative integer
+                if quantity <= 0:
+                    sg.popup_error("Quantity must be a positive integer.")
+                    continue
+
+                # Validation - gym ID must exist
+                if not file.gym_exists(connection, gym_id):
+                    sg.popup_error(f"Gym ID {gym_id} does not exist.")
+                    continue
+
+                # Attempt to update the equipment in the database
                 success = file.update_equipment(connection, equipment_id, name, equipment_type, quantity, gym_id)
                 if success:
                     sg.popup("Equipment updated successfully!")
@@ -866,6 +923,7 @@ def update_equipment(connection):
                     sg.popup_error("Failed to update equipment.")
             except Exception as e:
                 sg.popup_error(f"Error: {e}")
+                raise
             break
 
     # Close the window
@@ -901,8 +959,12 @@ def delete_equipment(connection):
             break
         elif event == 'Delete':
             try:
-                # Get the member ID
-                equipment_id = int(values['-ID-'])
+                # Get the equipment ID
+                equipment_id = is_integer(values['-ID-'], "equipment id")
+                
+                # make sure id was valid
+                if equipment_id is None:
+                    continue
                 
                 # Check if the class exists in the database
                 if not file.equipment_exists(connection, equipment_id):
@@ -1071,8 +1133,6 @@ def equipment_menu(connection):
 
     # Create the window
     window = sg.Window('Equipment Menu', layout)
-
-    
 
     while True:
         event, values = window.read()
