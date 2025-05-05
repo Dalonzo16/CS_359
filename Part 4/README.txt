@@ -8,6 +8,6 @@ Work Allocation:
     - Ludwig Scherer: Degbugging, input validation implementations
     - Alena Fisher: Wrote the CRUD operation functions in file.py, reconstructed file.py, and created
     and implemeneted gui.py
-    - Devon Alonzo: 
+    - Devon Alonzo: Assisted in CRUD operations, specifically for the equipment section and implemented gui.
 
 Project leader for this stage was: Ludwig Scherer
