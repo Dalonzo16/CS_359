@@ -5,7 +5,7 @@ using Create, Read, Update, and Delete (CRUD) actions and to write an interactiv
 a database by considering possiblt database operations. 
 
 Work Allocation:
-    - Ludwig Scherer: 
+    - Ludwig Scherer: Degbugging, input validation implementations
     - Alena Fisher: Wrote the CRUD operation functions in file.py, reconstructed file.py, and created
     and implemeneted gui.py
     - Devon Alonzo: 
